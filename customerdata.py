@@ -1,7 +1,8 @@
+from io import BytesIO
+
 import streamlit as st
 import pandas as pd
 from fuzzywuzzy import fuzz
-from io import BytesIO
 
 st.set_page_config(layout="wide")
 
@@ -32,9 +33,9 @@ if account_file is not None and market_file is not None:
     contact_df = pd.read_excel(account_file, sheet_name="Contact")
     opp_df = pd.read_excel(account_file, sheet_name="Opportunity")
 
-    account_df = account_df[["Id", "Name", "Type","IsDeleted","BillingCountryCode","Website","Industry","Rating","Description","LastActivityDate"]]
-    contact_df = contact_df[["Id", "AccountId", "Name", "Email","LastActivityDate"]]
-    opp_df = opp_df[["Id", "Amount", "Name","Description","StageName","Probability","TotalOpportunityQuantity","CloseDate", "Type","IsDeleted","AccountId"]]
+    account_df = account_df[["Id", "Name", "Industry", "Industry_Cluster_cbs__c", "Description", "Type","IsDeleted","BillingCountryCode","Website", "LastModifiedDate", "AccountSource", "SAP_ERP_Systeme__c", "Regionale_Sicht__c", "cbs_CommProjectAssistant__c","Konkurrenz__c"]]
+    contact_df = contact_df[["Id", "Description", "AccountId", "Name","LastName","FirstName", "Title", "Email", "Phone", "Bewertung__c", "Zust_ndigkeit__c", "Funktion__c"]]
+    opp_df = opp_df[["Id", "AccountId", "Name", "Description","StageName","Amount","CurrencyIsoCode", "TotalOpportunityQuantity", "Probability","CloseDate", "Type","LeadSource","IsClosed","IsWon","Win_Loss_Begr_ndung__c","Win_Loss_Bemerkungen__c","Portfolio_Thema__c","Bearbeiter_ist_Shared_User_aus_Gruppe__c","Bearbeiter_Name__c","Projektbeginn__c","Projektende__c","cbs_Landesgesellschaft__c","Projekttyp__c","Position_Vertriebstrichter__c","Letzte_Position_im_Trichter_gepr_ft__c","LastStageChangeDate","cbs_Bid_Manager__c"]]
 
     #acc_map_df = account_df.merge(contact_df, left_on="Id", right_on="AccountId", how="left").merge(opp_df, left_on="AccountId", right_on="AccountId", how="left")
     #st.write(acc_map_df)
@@ -125,7 +126,7 @@ if account_file is not None and market_file is not None:
         st.dataframe(filtered_df_2, use_container_width=True)
     with tab3:
         st.subheader("Opportunities for 2025")
-        joined_df = joined_df[["Name_x", "Website","Industry","Rating","Description_x","TotalOpportunityQuantity","CloseDate", "Type_x"]]
+        joined_df = joined_df[["Name_x", "Website","Industry","Description_x","TotalOpportunityQuantity","CloseDate", "Type_x"]]
         st.dataframe(joined_df, use_container_width=True)
     with tab4:
         # ---------- Clean Whitespace ----------
@@ -173,7 +174,7 @@ if account_file is not None and market_file is not None:
         # Join df with account_df on AccountId = Id
         joined_df = pd.merge(
             merged_df,
-            contact_df,
+            opp_df,
             left_on='Id',
             right_on='AccountId',
             how='left'
@@ -184,14 +185,19 @@ if account_file is not None and market_file is not None:
         # Join df with account_df on AccountId = Id
         joined_df = pd.merge(
             joined_df,
-            opp_df,
+            contact_df,
             left_on='AccountId',
             right_on='AccountId',
             how='left'
         )
 
+        #st.write(joined_df.columns)
+        # Define desired order
+
+
         st.subheader("🔗 Final Customer Data with Opportunities")
         st.dataframe(joined_df, use_container_width=True)
+
 
         # Function to convert DataFrame to Excel in memory
         def to_excel(df):
@@ -212,6 +218,5 @@ if account_file is not None and market_file is not None:
             file_name="2025_ch_opp.xlsx",
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         )
-        
 else:
     st.warning("Please upload both the Account and Opportunity Excel files.")
