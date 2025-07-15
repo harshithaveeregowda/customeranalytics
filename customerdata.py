@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 from fuzzywuzzy import fuzz
+from io import BytesIO
 
 st.set_page_config(layout="wide")
 
@@ -191,5 +192,26 @@ if account_file is not None and market_file is not None:
 
         st.subheader("🔗 Final Customer Data with Opportunities")
         st.dataframe(joined_df, use_container_width=True)
+
+        # Function to convert DataFrame to Excel in memory
+        def to_excel(df):
+            output = BytesIO()
+            with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
+                df.to_excel(writer, index=False, sheet_name='Sheet1')
+            processed_data = output.getvalue()
+            return processed_data
+
+
+        # Convert to Excel
+        excel_data = to_excel(joined_df)
+
+        # Download button
+        st.download_button(
+            label="📥 Download Excel File",
+            data=excel_data,
+            file_name="2025_ch_opp.xlsx",
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
+        
 else:
     st.warning("Please upload both the Account and Opportunity Excel files.")
