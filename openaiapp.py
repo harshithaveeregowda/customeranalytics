@@ -1,6 +1,15 @@
+import streamlit as st
 import openai
 
-openai.api_key = st.secrets["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"]
+openai.api_key = st.secrets["openai"]["api_key"]
+
+response = openai.ChatCompletion.create(
+    model="gpt-3.5-turbo",
+    messages=[{"role": "user", "content": "Say hello"}]
+)
+
+st.write(response.choices[0].message["content"])
+
 
 def classify_row(name, industry, country):
     prompt = f"""
